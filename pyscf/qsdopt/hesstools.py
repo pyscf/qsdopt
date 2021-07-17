@@ -13,6 +13,8 @@
 # limitations under the License.
 import numpy as np
 
+from pyscf.hessian.thermo import _get_TR
+
 
 def numhess(mol, g_scanner):
     """Evaluate numerical hessian of the energy."""
@@ -39,3 +41,56 @@ def numhess(mol, g_scanner):
 
     H = (H + H.T) / fourdelta
     return H
+
+
+def filter_hessian(mol, H):
+    """Projects translations and rotations out of the hessian."""
+    # NOTE: This method can maybe be in pyscf.hessian.thermo
+    zero_thres = 1e-5
+    coords = mol.atom_coords()
+    m = mol.atom_mass_list()
+    sm = np.sqrt(m)
+    sm3 = np.repeat(sm, 3)
+    nat = len(m)
+
+    D = np.zeros([6, 3 * nat])
+    D[0], D[1], D[2], D[3], D[4], D[5] = _get_TR(m, coords)
+    norm = np.linalg.norm(D, axis=1)
+    D = D[norm > zero_thres]
+    D /= norm[norm > zero_thres][:, None]
+
+    P = np.identity(D.shape[1]) - D.T @ D
+    H = np.einsum("ij, i, j -> ij", H, 1 / sm3, 1 / sm3)
+    H = P.T @ H @ P
+    H = np.einsum("ij, i, j -> ij", H, sm3, sm3)
+    return H
+
+
+if __name__ == "__main__":
+    from pyscf import gto, scf
+
+    test_names = ["H2O", "H2"]
+    atoms = [
+        "O 0. 0.40846003 0.60306451; H 0. -0.770609 2.20504746; H 0. 2.2518751 1.3492855",
+        "H 0 0 0; H 0 0 1.603",
+    ]
+
+    for (name, atom) in zip(test_names, atoms):
+        mol = gto.M(
+            atom=atom,
+            basis="minao",
+            verbose=0,
+            unit="Bohr",
+        )
+        mf = scf.RHF(mol)
+        g_scanner = mf.nuc_grad_method().as_scanner()
+        H = numhess(mol, g_scanner)
+        eigval = np.linalg.eigvalsh(H)
+
+        H = filter_hessian(mol, H)
+        feigval = np.linalg.eigvalsh(H)
+
+        print(f"\n {name} example")
+        print("Not filtered; Filtered")
+        for ival in range(eigval.shape[0]):
+            print(f"{eigval[ival]:2.5E} {feigval[ival]:2.5E}")
