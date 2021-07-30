@@ -24,7 +24,7 @@ from qsdopt.hesstools import (
 )
 
 
-def kernel(g_scanner, stationary_point):
+def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=5):
     max_iter = 100
     step = 0.1
     ITAM = 10
@@ -54,7 +54,11 @@ def kernel(g_scanner, stationary_point):
         print(it, energy, np.linalg.norm(g0), np.linalg.norm(inc), ITA)
         if np.linalg.norm(g0) < gthres or np.linalg.norm(inc) < hmin or ITA > ITAM:
             break
-        H = numhess(g_scanner.mol, g_scanner)
+        if it % hess_update_freq == 0:
+            H = numhess(g_scanner.mol, g_scanner)
+        else:
+            dH = hess_update_rule(H, x0 - x_1, g0 - g_1)
+            H += dH
         Hf = filter_hessian(g_scanner.mol, H)
         Hf = np.einsum("ij, i, j -> ij", Hf, 1 / sm3, 1 / sm3)
         inc = qsd_step(x0 * sm3, g0 / sm3, Hf, sm3, stationary_point, step=step)
@@ -117,6 +121,10 @@ class QSD(lib.StreamObject):
         self.method = method
         self.stationary_point = stationary_point
         assert self.stationary_point in ["min", "TS"]
+        if self.stationary_point == "TS":
+            self.hess_update = hess_powell_update
+        elif self.stationary_point == "min":
+            self.hess_update = hess_BFGS_update
 
     def kernel(self, hess_update_freq):
         if isinstance(self.method, lib.GradScanner):
@@ -129,4 +137,6 @@ class QSD(lib.StreamObject):
             raise NotImplementedError(
                 "Nuclear gradients of %s not available" % self.method
             )
-        converged, self.mol = kernel(g_scanner, self.stationary_point)
+        converged, self.mol = kernel(
+            g_scanner, self.stationary_point, self.hess_update, hess_update_freq
+        )
