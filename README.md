@@ -1,4 +1,4 @@
-qsd_geometry_optimization module for PySCF
+qsdopt module for PySCF
 =========================
 
 2021-07-13
@@ -9,12 +9,12 @@ Install
 -------
 * Install to python site-packages folder
 ```
-pip install git+https://github.com/pyscf/qsd_geometry_optimization
+pip install git+https://github.com/pyscf/qsdopt
 ```
 
 * Install in a custom folder for development
 ```
-git clone https://github.com/pyscf/qsd_geometry_optimization /home/abc/local/path
+git clone https://github.com/pyscf/qsdopt /home/abc/local/path
 
 # Set pyscf extended module path
 echo 'export PYSCF_EXT_PATH=/home/abc/local/path:$PYSCF_EXT_PATH' >> ~/.bashrc
