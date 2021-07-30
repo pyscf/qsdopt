@@ -16,6 +16,58 @@ import numpy as np
 
 from pyscf import lib
 from pyscf.grad.rhf import GradientsMixin
+from qsdopt.hesstools import (
+    filter_hessian,
+    hess_BFGS_update,
+    hess_powell_update,
+    numhess,
+)
+
+
+def kernel(g_scanner, stationary_point):
+    max_iter = 100
+    step = 0.1
+    ITAM = 10
+    hmin = 1e-6
+    gthres = 1e-6
+    ITA = 0
+    m = g_scanner.mol.atom_mass_list()
+    sm = np.sqrt(m)
+    sm3 = np.repeat(sm, 3)
+    nat = len(m)
+    x0 = g_scanner.mol.atom_coords().flatten()
+    energy, g0 = g_scanner(g_scanner.mol)
+    g0 = g0.flatten()
+    H = numhess(g_scanner.mol, g_scanner)
+    H = filter_hessian(g_scanner.mol, H)
+    H = np.einsum("ij, i, j -> ij", H, 1 / sm3, 1 / sm3)
+    inc = qsd_step(x0 * sm3, g0 / sm3, H, sm3, stationary_point, step=step)
+    x1 = x0 + inc
+
+    for it in range(max_iter):
+        x_1 = x0.copy()
+        g_1 = g0.copy()
+        x0 = x1.copy()
+        g_scanner.mol.set_geom_(x0.reshape(nat, 3), unit="Bohr")
+        energy, g0 = g_scanner(g_scanner.mol)
+        g0 = g0.flatten()
+        print(it, energy, np.linalg.norm(g0), np.linalg.norm(inc), ITA)
+        if np.linalg.norm(g0) < gthres or np.linalg.norm(inc) < hmin or ITA > ITAM:
+            break
+        H = numhess(g_scanner.mol, g_scanner)
+        Hf = filter_hessian(g_scanner.mol, H)
+        Hf = np.einsum("ij, i, j -> ij", Hf, 1 / sm3, 1 / sm3)
+        inc = qsd_step(x0 * sm3, g0 / sm3, Hf, sm3, stationary_point, step=step)
+        x1 = x0 + inc
+
+        val = (x_1 - x0) @ (x0 - x1)
+        if val > 0.0:
+            ITA = 0
+        else:
+            ITA += 1
+
+    g_scanner.mol.set_geom_(x1.reshape(nat, 3), unit="Bohr")
+    return True, g_scanner.mol
 
 
 def qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
