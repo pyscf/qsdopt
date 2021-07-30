@@ -140,3 +140,13 @@ class QSD(lib.StreamObject):
         converged, self.mol = kernel(
             g_scanner, self.stationary_point, self.hess_update, hess_update_freq
         )
+
+
+if __name__ == "__main__":
+    from pyscf import gto, scf
+
+    mol = gto.M(atom="O 0 0 0; H 0 0 1.2; H 0, 0.1, -1.2", basis="minao", verbose=0)
+    mf = scf.RHF(mol)
+    optimizer = QSD(mf, stationary_point="TS")
+    optimizer.kernel(hess_update_freq=1)
+    print(mol.atom_coords())
