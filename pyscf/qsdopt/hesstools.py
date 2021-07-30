@@ -66,6 +66,25 @@ def filter_hessian(mol, H):
     return H
 
 
+def hess_powell_update(H, dq, dg):
+    """Update hessian using Powell rule"""
+    Hdq = H.dot(dq)
+    dqdq = dq.dot(dq)
+    aux = (dg - Hdq) * dq[:, None]
+    dH1 = (aux + aux.T) / dqdq
+    dH2 = (dq.dot(dg) - dq.dot(Hdq)) * dq[:, None] * dq / dqdq ** 2
+    dH = dH1 - dH2
+    return dH
+
+
+def hess_BFGS_update(H, dq, dg):
+    """Update hessian using BFGS rule"""
+    dH1 = dg[None, :] * dg[:, None] / dq.dot(dg)
+    dH2 = H.dot(dq[None, :] * dq[:, None]).dot(H) / dq.dot(H).dot(dq)
+    dH = dH1 - dH2  # BFGS update
+    return dH
+
+
 if __name__ == "__main__":
     from pyscf import gto, scf
 
