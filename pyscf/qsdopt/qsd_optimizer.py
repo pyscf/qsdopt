@@ -61,7 +61,7 @@ def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=5):
         print(it, energy, np.linalg.norm(g0), np.linalg.norm(inc), ITA)
         if np.linalg.norm(g0) < gthres or np.linalg.norm(inc) < hmin or ITA > ITAM:
             break
-        if it % hess_update_freq == 0:
+        if hess_update_freq > 0 and it % hess_update_freq == 0:
             H = numhess(g_scanner.mol, g_scanner)
         else:
             dH = hess_update_rule(H, x0 - x_1, g0 - g_1)
