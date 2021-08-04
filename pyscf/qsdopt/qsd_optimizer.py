@@ -118,7 +118,6 @@ def qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
                 umax = u
             else:
                 umin = u
-    print("u, max norm, real inc", umin, u, np.linalg.norm(delta), np.linalg.norm(inc))
     return inc
 
 
