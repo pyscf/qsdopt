@@ -24,13 +24,6 @@ from qsdopt.hesstools import (
 )
 
 
-def curvature(H, g, gnorm):
-    # From 10.1063/1.465994.
-    t = g / gnorm
-    k = np.sqrt(t @ H @ (np.identity(H.shape[0]) - t * t[None, :]) @ H @ t) / gnorm
-    return k
-
-
 def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=5):
     max_iter = 100
     step = 0.1
