@@ -51,7 +51,7 @@ def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=5):
     inc = qsd_step(x0 * sm3, g0 / sm3, H, sm3, stationary_point, step=step)
     x1 = x0 + inc
 
-    for it in range(max_iter):
+    for it in range(1, max_iter):
         x_1 = x0.copy()
         g_1 = g0.copy()
         x0 = x1.copy()
