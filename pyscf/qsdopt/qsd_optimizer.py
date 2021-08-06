@@ -24,7 +24,7 @@ from qsdopt.hesstools import (
 )
 
 
-def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=5):
+def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
     max_iter = 100
     step = 0.1
     ITAM = 10
