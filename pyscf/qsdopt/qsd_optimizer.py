@@ -25,6 +25,7 @@ from qsdopt.hesstools import (
 
 
 def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
+    converged = False
     max_iter = 100
     step = 0.1
     ITAM = 10
@@ -53,6 +54,7 @@ def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
         g0 = g0.flatten()
         print(it, energy, np.linalg.norm(g0), np.linalg.norm(inc), ITA)
         if np.linalg.norm(g0) < gthres or np.linalg.norm(inc) < hmin or ITA > ITAM:
+            converged = True
             break
         if hess_update_freq > 0 and it % hess_update_freq == 0:
             H = numhess(g_scanner.mol, g_scanner)
@@ -71,7 +73,7 @@ def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
             ITA += 1
 
     g_scanner.mol.set_geom_(x1.reshape(nat, 3), unit="Bohr")
-    return True, g_scanner.mol
+    return converged, g_scanner.mol
 
 
 def qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
@@ -120,7 +122,7 @@ class QSD(lib.StreamObject):
     def __init__(self, method, stationary_point="min"):
         self.method = method
         self.stationary_point = stationary_point
-        assert self.stationary_point in ["min", "TS"]
+        self.converged = False
         if self.stationary_point == "TS":
             self.hess_update = hess_powell_update
         elif self.stationary_point == "min":
@@ -137,7 +139,7 @@ class QSD(lib.StreamObject):
             raise NotImplementedError(
                 "Nuclear gradients of %s not available" % self.method
             )
-        converged, self.mol = kernel(
+        self.converged, self.mol = kernel(
             g_scanner, self.stationary_point, self.hess_update, hess_update_freq
         )
 
