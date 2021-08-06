@@ -21,6 +21,29 @@ def numhess(mol, g_scanner):
     return H
 
 
+def forward_differences_hess(mol, g_scanner, g0):
+    """Evaluate numerical hessian of the energy using forward differences."""
+    delta = 1e-4
+    twodelta = 2 * delta
+    geom = mol.atom_coords()
+    nat = geom.shape[0]
+    ndim = 3 * nat
+    H = np.zeros([ndim, ndim])
+
+    for iat in range(nat):
+        for icoor in range(3):
+            i = 3 * iat + icoor
+            _geom = geom.copy()
+            _geom[iat, icoor] = geom[iat, icoor] + delta
+            mol.set_geom_(_geom, unit="Bohr")
+            e1, g1 = g_scanner(mol)
+
+            H[i, :] = (g1 - g0).reshape(-1)
+
+    H = (H + H.T) / twodelta
+    return H
+
+
 def central_differences_hess(mol, g_scanner):
     """Evaluate numerical hessian of the energy using central differences."""
     delta = 1e-4

@@ -7,6 +7,7 @@ from pyscf import gto, scf
 from qsdopt.hesstools import (
     central_differences_hess,
     filter_hessian,
+    forward_differences_hess,
     hess_BFGS_update,
     hess_powell_update,
 )
@@ -29,6 +30,15 @@ class HessianTests(unittest.TestCase):
         H = central_differences_hess(mol, scanner)
         assert_allclose(
             H, np.array([[4.0, 2.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0]])
+        )
+
+    def test_forwardhess(self):
+        scanner = MyScanner()
+        mol = gto.M(atom="O 1 2 3", basis="minao", unit="Bohr")
+        f, g0 = scanner(mol)
+        H = forward_differences_hess(mol, scanner, g0)
+        assert_allclose(
+            H, np.array([[4.0, 2.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0]]), rtol=1e-4
         )
 
     def test_filterhess1(self):
