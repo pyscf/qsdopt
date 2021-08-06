@@ -5,10 +5,10 @@ from numpy.testing import assert_allclose
 
 from pyscf import gto, scf
 from qsdopt.hesstools import (
+    central_differences_hess,
     filter_hessian,
     hess_BFGS_update,
     hess_powell_update,
-    numhess,
 )
 
 zero_thres = 1e-15
@@ -23,10 +23,10 @@ class MyScanner:
 
 
 class HessianTests(unittest.TestCase):
-    def test_numhess(self):
+    def test_centralhess(self):
         scanner = MyScanner()
         mol = gto.M(atom="O 1 2 3", basis="minao", unit="Bohr")
-        H = numhess(mol, scanner)
+        H = central_differences_hess(mol, scanner)
         assert_allclose(
             H, np.array([[4.0, 2.0, 0.0], [2.0, 0.0, 0.0], [0.0, 0.0, 2.0]])
         )
@@ -40,7 +40,7 @@ class HessianTests(unittest.TestCase):
         )
         mf = scf.RHF(mol)
         g_scanner = mf.nuc_grad_method().as_scanner()
-        H = numhess(mol, g_scanner)
+        H = central_differences_hess(mol, g_scanner)
 
         H = filter_hessian(mol, H)
         feigval = np.linalg.eigvalsh(H)
@@ -55,7 +55,7 @@ class HessianTests(unittest.TestCase):
         )
         mf = scf.RHF(mol)
         g_scanner = mf.nuc_grad_method().as_scanner()
-        H = numhess(mol, g_scanner)
+        H = central_differences_hess(mol, g_scanner)
 
         H = filter_hessian(mol, H)
         feigval = np.linalg.eigvalsh(H)
@@ -76,11 +76,7 @@ class HessianTests(unittest.TestCase):
         f2, g2, H2 = func(x2[0], x2[1])
 
         dH = hess_powell_update(H1, (x2 - x1), (g2 - g1))
-        assert_allclose(
-            dH,
-            np.array([[0.0, 1e-1], [1e-1, 0.0]]),
-            atol=1e-15
-        )
+        assert_allclose(dH, np.array([[0.0, 1e-1], [1e-1, 0.0]]), atol=1e-15)
 
     def test_hess_BFGS_update(self):
         def func(x, y):
@@ -97,8 +93,4 @@ class HessianTests(unittest.TestCase):
         f2, g2, H2 = func(x2[0], x2[1])
 
         dH = hess_BFGS_update(H1, (x2 - x1), (g2 - g1))
-        assert_allclose(
-            dH,
-            np.array([[4.5e-1, 1e-1], [1e-1, 0.0]]),
-            atol=1e-15
-        )
+        assert_allclose(dH, np.array([[4.5e-1, 1e-1], [1e-1, 0.0]]), atol=1e-15)

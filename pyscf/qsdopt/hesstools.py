@@ -17,7 +17,12 @@ from pyscf.hessian.thermo import _get_TR
 
 
 def numhess(mol, g_scanner):
-    """Evaluate numerical hessian of the energy."""
+    H = central_differences_hess(mol, g_scanner)
+    return H
+
+
+def central_differences_hess(mol, g_scanner):
+    """Evaluate numerical hessian of the energy using central differences."""
     delta = 1e-4
     fourdelta = 4 * delta
     geom = mol.atom_coords()
