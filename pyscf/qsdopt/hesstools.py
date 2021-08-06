@@ -16,8 +16,11 @@ import numpy as np
 from pyscf.hessian.thermo import _get_TR
 
 
-def numhess(mol, g_scanner):
-    H = central_differences_hess(mol, g_scanner)
+def numhess(mol, g_scanner, g0, method):
+    if method == "forward":
+        H = forward_differences_hess(mol, g_scanner, g0)
+    elif method == "central":
+        H = central_differences_hess(mol, g_scanner)
     return H
 
 
@@ -38,7 +41,7 @@ def forward_differences_hess(mol, g_scanner, g0):
             mol.set_geom_(_geom, unit="Bohr")
             e1, g1 = g_scanner(mol)
 
-            H[i, :] = (g1 - g0).reshape(-1)
+            H[i, :] = g1.reshape(-1) - g0
 
     H = (H + H.T) / twodelta
     return H

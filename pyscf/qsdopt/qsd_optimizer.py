@@ -24,7 +24,13 @@ from qsdopt.hesstools import (
 )
 
 
-def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
+def kernel(
+    g_scanner,
+    stationary_point,
+    hess_update_rule,
+    hess_update_freq=0,
+    numhess_method="forward",
+):
     converged = False
     max_iter = 100
     step = 0.1
@@ -39,7 +45,7 @@ def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
     x0 = g_scanner.mol.atom_coords().flatten()
     energy, g0 = g_scanner(g_scanner.mol)
     g0 = g0.flatten()
-    H = numhess(g_scanner.mol, g_scanner)
+    H = numhess(g_scanner.mol, g_scanner, g0, numhess_method)
     H = filter_hessian(g_scanner.mol, H)
     H = np.einsum("ij, i, j -> ij", H, 1 / sm3, 1 / sm3)
     inc = qsd_step(x0 * sm3, g0 / sm3, H, sm3, stationary_point, step=step)
@@ -57,7 +63,7 @@ def kernel(g_scanner, stationary_point, hess_update_rule, hess_update_freq=0):
             converged = True
             break
         if hess_update_freq > 0 and it % hess_update_freq == 0:
-            H = numhess(g_scanner.mol, g_scanner)
+            H = numhess(g_scanner.mol, g_scanner, g0, numhess_method)
         else:
             dH = hess_update_rule(H, x0 - x_1, g0 - g_1)
             H += dH
