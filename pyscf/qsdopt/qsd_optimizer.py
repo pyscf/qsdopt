@@ -30,13 +30,13 @@ def kernel(
     hess_update_rule,
     hess_update_freq=0,
     numhess_method="forward",
+    max_iter=100,
+    step=0.1,
+    ITAM=10,
+    hmin=1e-6,
+    gthres=1e-5,
 ):
     converged = False
-    max_iter = 100
-    step = 0.1
-    ITAM = 10
-    hmin = 1e-6
-    gthres = 1e-6
     ITA = 0
     m = g_scanner.mol.atom_mass_list()
     sm = np.sqrt(m)
@@ -134,7 +134,7 @@ class QSD(lib.StreamObject):
         elif self.stationary_point == "min":
             self.hess_update = hess_BFGS_update
 
-    def kernel(self, hess_update_freq):
+    def kernel(self, **kwargs):
         if isinstance(self.method, lib.GradScanner):
             g_scanner = self.method
         elif isinstance(self.method, GradientsMixin):
@@ -146,7 +146,7 @@ class QSD(lib.StreamObject):
                 "Nuclear gradients of %s not available" % self.method
             )
         self.converged, self.mol = kernel(
-            g_scanner, self.stationary_point, self.hess_update, hess_update_freq
+            g_scanner, self.stationary_point, self.hess_update, **kwargs
         )
 
 
