@@ -32,12 +32,26 @@ def kernel(
     numhess_method="forward",
     max_iter=100,
     step=0.1,
-    ITAM=10,
     hmin=1e-6,
     gthres=1e-5,
 ):
+    """
+    Quadratic Steepest Descent method for transition state and minima optimization.
+    Implemeted following: J. Chem. Phys., 101, 2157, 1994; 10.1063/1.467721
+    Arguments:
+        hess_update_freq: Iterations before next numerical hessian calculation. If 0 the
+            hessian is not updated in the optimization process unless problematic region is reached.
+        numhess:method: Method for numerical hessian calculation. "forward" for forward differences
+            calculation, "central" for central differences calculation.
+        max_iter: Maximum number of iterations in the optimization process.
+        step: Maximum step at each optimization iteration.
+        hmin: Minimum distance between next point (x1) and quadratic form minima (m) to make x1 = m.
+        gthres: Gradient threshold to consider stationary point reached.
+
+    """
     converged = False
     ITA = 0
+    ITAM = 10
     m = g_scanner.mol.atom_mass_list()
     sm = np.sqrt(m)
     sm3 = np.repeat(sm, 3)
