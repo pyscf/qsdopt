@@ -43,7 +43,9 @@ class HessianTests(unittest.TestCase):
 
     def test_filterhess1(self):
         mol = gto.M(
-            atom="O 0. 0.40846003 0.60306451; H 0. -0.770609 2.20504746; H 0. 2.2518751 1.3492855",
+            atom="""O 0. 0.40846003 0.60306451
+                    H 0. -0.770609 2.20504746
+                    H 0. 2.2518751 1.3492855""",
             basis="minao",
             verbose=0,
             unit="Bohr",
