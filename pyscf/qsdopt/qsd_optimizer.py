@@ -58,8 +58,10 @@ def kernel(
         g_scanner.mol.set_geom_(x0.reshape(nat, 3), unit="Bohr")
         energy, g0 = g_scanner(g_scanner.mol)
         g0 = g0.flatten()
-        print(it, energy, np.linalg.norm(g0), np.linalg.norm(inc), ITA)
-        if np.linalg.norm(g0) < gthres or np.linalg.norm(inc) < hmin or ITA > ITAM:
+        gnorm = np.linalg.norm(g0)
+        incnorm = np.linalg.norm(inc)
+        print(it, energy, gnorm, incnorm, ITA)
+        if gnorm < gthres or incnorm < hmin or ITA > ITAM:
             converged = True
             break
         if hess_update_freq > 0 and it % hess_update_freq == 0:
