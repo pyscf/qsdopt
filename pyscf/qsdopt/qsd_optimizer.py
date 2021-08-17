@@ -159,5 +159,5 @@ if __name__ == "__main__":
     mol = gto.M(atom="O 0 0 0; H 0 0 1.2; H 0, 0.1, -1.2", basis="minao", verbose=0)
     mf = scf.RHF(mol)
     optimizer = QSD(mf, stationary_point="TS")
-    optimizer.kernel(hess_update_freq=1)
+    optimizer.kernel()
     print(mol.atom_coords())
