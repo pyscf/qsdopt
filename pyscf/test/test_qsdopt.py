@@ -13,12 +13,12 @@ class QSDOptTests(unittest.TestCase):
         mf = scf.RHF(mol)
         optimizer = QSD(mf, stationary_point="TS")
         optimizer.kernel()
-        TS = np.array(
-            [
-                [1.50228475e-18, 1.04977710e-02, 3.08561792e-07],
-                [1.51292813e-17, -6.81250364e-02, 1.88752430e00],
-                [-1.21073939e-17, 8.91333136e-02, -1.88752923e00],
-            ]
-        )
-        assert_almost_equal(TS, mol.atom_coords())
-        print(TS - mol.atom_coords())
+        coords = mol.atom_coords()
+        v1 = coords[0, :] - coords[1, :]
+        v2 = coords[0, :] - coords[2, :]
+        d1 = np.linalg.norm(v1)
+        d2 = np.linalg.norm(v2)
+        phi = np.arccos(v1.dot(v2) / (d1 * d2))
+        assert_almost_equal(d1, d2, 4)
+        assert_almost_equal(phi, np.pi, 4)
+        self.assertTrue(optimizer.converged)
