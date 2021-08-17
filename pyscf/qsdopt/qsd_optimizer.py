@@ -65,7 +65,8 @@ def kernel(
         if gnorm < gthres or incnorm < hmin or ITA > ITAM:
             converged = True
             break
-        if hess_update_freq > 0 and it % hess_update_freq == 0:
+        if hess_update_freq > 0 and it % hess_update_freq == 0 or ITA >= 4:
+            print("Recalculating hessian")
             H = numhess(g_scanner.mol, g_scanner, g0, numhess_method)
         else:
             dH = hess_update_rule(H, x0 - x_1, g0 - g_1)
