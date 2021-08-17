@@ -89,7 +89,6 @@ def kernel(
 def qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
     zero_thres = 1e-10
     step_thres = 1e-1 * step
-    uthres = 1e-320
     eigval, eigvec = np.linalg.eigh(H)
     NMeigvec = eigvec.T[np.abs(eigval) > zero_thres]
     hNM = eigval[np.abs(eigval) > zero_thres]
@@ -110,19 +109,25 @@ def qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
     incNM = (umin ** hNM - 1e0) * delta
     inc = NMeigvec.T @ incNM / sm3
     inc_norm = np.linalg.norm(inc)
+    inc_max = inc_norm
 
     if inc_norm > step:
         # Search u value.
         umax = 1e0
-        while np.abs(inc_norm - step) > step_thres and umax > uthres:
+        inc_min = 0e0
+        while (
+            np.abs(inc_norm - step) > step_thres and np.abs(inc_max - inc_min) > 1e-20
+        ):
             u = (umax + umin) / 2.0
             incNM = (u ** hNM - 1e0) * delta
             inc = NMeigvec.T @ incNM / sm3
             inc_norm = np.linalg.norm(inc)
             if inc_norm < step:
                 umax = u
+                inc_min = inc_norm
             else:
                 umin = u
+                inc_max = inc_norm
     return inc
 
 
