@@ -162,4 +162,5 @@ if __name__ == "__main__":
     mf = scf.RHF(mol)
     optimizer = QSD(mf, stationary_point="TS")
     optimizer.kernel()
+    print(f"Converged: {optimizer.converged}")
     print(mol.atom_coords())
