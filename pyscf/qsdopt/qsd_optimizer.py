@@ -128,6 +128,7 @@ class QSD(lib.StreamObject):
     """QSD optimizer."""
 
     def __init__(self, method, stationary_point="min"):
+        assert stationary_point in ["min", "TS"]
         self.method = method
         self.stationary_point = stationary_point
         self.converged = False
