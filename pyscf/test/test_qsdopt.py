@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 
 from pyscf import gto, scf
-from qsdopt.qsd_optimizer import QSD
+from pyscf.qsdopt.qsd_optimizer import QSD
 
 
 class QSDOptTests(unittest.TestCase):

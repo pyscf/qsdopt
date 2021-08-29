@@ -16,7 +16,7 @@ import numpy as np
 
 from pyscf import lib
 from pyscf.grad.rhf import GradientsMixin
-from qsdopt.hesstools import (
+from pyscf.qsdopt.hesstools import (
     filter_hessian,
     hess_BFGS_update,
     hess_powell_update,

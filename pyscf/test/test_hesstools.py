@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 
 from pyscf import gto, scf
-from qsdopt.hesstools import (
+from pyscf.qsdopt.hesstools import (
     central_differences_hess,
     filter_hessian,
     forward_differences_hess,
