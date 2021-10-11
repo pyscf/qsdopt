@@ -62,7 +62,7 @@ def kernel(
     H = numhess(g_scanner.mol, g_scanner, g0, numhess_method)
     H = filter_hessian(g_scanner.mol, H)
     H = np.einsum("ij, i, j -> ij", H, 1 / sm3, 1 / sm3)
-    inc = qsd_step(x0 * sm3, g0 / sm3, H, sm3, stationary_point, step=step)
+    inc = _qsd_step(x0 * sm3, g0 / sm3, H, sm3, stationary_point, step=step)
     x1 = x0 + inc
 
     print("Iteration   Energy       Gradient Norm   Increment norm")
@@ -87,7 +87,7 @@ def kernel(
             H += dH
         Hf = filter_hessian(g_scanner.mol, H)
         Hf = np.einsum("ij, i, j -> ij", Hf, 1 / sm3, 1 / sm3)
-        inc = qsd_step(x0 * sm3, g0 / sm3, Hf, sm3, stationary_point, step=step)
+        inc = _qsd_step(x0 * sm3, g0 / sm3, Hf, sm3, stationary_point, step=step)
         x1 = x0 + inc
 
         val = (x_1 - x0) @ (x0 - x1)
@@ -100,7 +100,7 @@ def kernel(
     return converged, g_scanner.mol
 
 
-def qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
+def _qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
     zero_thres = 1e-10
     step_thres = 1e-1 * step
     eigval, eigvec = np.linalg.eigh(H)
