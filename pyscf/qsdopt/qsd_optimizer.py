@@ -121,7 +121,7 @@ def _qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
     else:
         umin = 1e-25
 
-    incNM = (umin ** hNM - 1e0) * delta
+    incNM = (umin**hNM - 1e0) * delta
     inc = NMeigvec.T @ incNM / sm3
     inc_norm = np.linalg.norm(inc)
     inc_max = inc_norm
@@ -131,10 +131,10 @@ def _qsd_step(x0, g, H, sm3, stationary_point, step=1e-1):
         umax = 1e0
         inc_min = 0e0
         while (
-            np.abs(inc_norm - step) > step_thres and np.abs(inc_max - inc_min) > 1e-20
+            np.abs(inc_norm - step) > step_thres and np.abs(umax - umin) > 1e-20
         ):
             u = (umax + umin) / 2.0
-            incNM = (u ** hNM - 1e0) * delta
+            incNM = (u**hNM - 1e0) * delta
             inc = NMeigvec.T @ incNM / sm3
             inc_norm = np.linalg.norm(inc)
             if inc_norm < step:
