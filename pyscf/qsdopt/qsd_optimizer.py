@@ -64,8 +64,8 @@ def kernel(
     H = np.einsum("ij, i, j -> ij", H, 1 / sm3, 1 / sm3)
     inc = _qsd_step(x0 * sm3, g0 / sm3, H, sm3, stationary_point, step=step)
     x1 = x0 + inc
+    eprev = energy
 
-    print("Iteration   Energy       Gradient Norm   Increment norm")
     for it in range(1, max_iter):
         x_1 = x0.copy()
         g_1 = g0.copy()
@@ -75,7 +75,7 @@ def kernel(
         g0 = g0.flatten()
         gnorm = np.linalg.norm(g0)
         incnorm = np.linalg.norm(inc)
-        print(f"{it:3d}         {energy:10.7f}  {gnorm:4.2e}        {incnorm:4.2e}")
+        print(f"It: {it}, E={energy:8.7f}, |g|={gnorm:.2e}, |step|={incnorm:.2e}, |dE|={np.abs(energy-eprev):.2e}")
         if gnorm < gthres or incnorm < hmin or ITA > ITAM:
             converged = True
             break
@@ -95,6 +95,7 @@ def kernel(
             ITA = 0
         else:
             ITA += 1
+        eprev = energy
 
     g_scanner.mol.set_geom_(x1.reshape(nat, 3), unit="Bohr")
     return converged, g_scanner.mol
